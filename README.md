@@ -1,8 +1,8 @@
-# helm-generator
+# Helm-generator
 Generates the helm chart using ansible 
 
 
-# Generate the helm chart 
+## Generate the helm chart 
 Features
 1. Generates Service resource
 2. Deployments resource
@@ -19,12 +19,12 @@ config.yaml has all the configuration date. This file can be modified to customi
 ansible-playbook helm-generator
 ```
 
-# Prerequisites.
+## Prerequisites.
 1. Ansible
 2. Helm 
 3. kubectl (after genertion)
 
-# Prerequisites to use the generated helm chart
+## Prerequisites to use the generated helm chart
 1. kubectl
 2. k8s cluster (Cloud,minikube,kind, I use kind)
 3. Istio Installed in K8s
@@ -35,7 +35,7 @@ kubectl config use-config  <your context>
 ```
 
 
-# Example configuration (partial)
+## Example configuration (partial)
 ```
 app:
     name: todo-api
