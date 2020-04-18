@@ -1,0 +1,27 @@
+
+ db_secret:
+     file:  ".{{ app.name }}.dbstring"
+ doc_reg_secret:
+     file:   ".{{ app.name }}.doc-reg-secret"
+    
+
+
+
+ certificate: 
+    run: no
+    delete: no #delete in k8s before applying
+    apply: no  #apply to k8s
+    clean: no  #delete generated file
+    issuer: letsencrypt
+    type: staging #! emum { staging , prod}
+    #name: cert-todo
+    name: "{{ app.name }}"
+    app: "{{ app.name }}"
+    class: istio
+    hostBaseDomain: "{{ app.host }}"
+    namespace: istio-system
+  
+
+
+
+

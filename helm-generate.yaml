@@ -1,0 +1,131 @@
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  vars_files:
+      - ./templates/var.yaml
+      - config.yaml
+  tasks:
+    - name: Delete existing helm charts if any
+      file:
+        path: "helm"
+        state: absent
+
+    - name: Creating helm directory
+      file:
+        path: "helm/{{ app.name }}"
+        state: directory
+
+    - name: Create Helm Chart
+      shell: helm create helm/{{ app.name }}
+##########################################################################################
+######################### Create the helm template using jinja2 template #################
+##########################################################################################
+    - name: Creating Deployment from templates
+      template:
+        src: deployment.yaml.j2
+        dest: "helm/{{ app.name }}/templates/deployment.yaml"
+      when:   config.deployment  == 'enabled'
+#------------------------------------------------------------------------------------------      
+
+    - name: Creating Service from templates
+      template:
+        src: service.yaml.j2
+        dest: "helm/{{ app.name }}/templates/service.yaml"
+      when:   config.service  == 'enabled'
+#------------------------------------------------------------------------------------------
+
+    - name: Creating ingress from templates
+      template:
+        src: ingress.yaml.j2
+        dest: "helm/{{ app.name }}/templates/ingress.yaml"   
+      when:   config.ingress  == 'enabled'  
+#------------------------------------------------------------------------------------------
+
+    - name: Creating Istio GW from templates
+      template:
+        src: gateway.yaml.j2
+        dest: "helm/{{ app.name }}/templates/gateway.yaml"
+      when:   config.gateway  == 'enabled'
+#------------------------------------------------------------------------------------------
+
+    - name: Creating VS from templates
+      template:
+        src: virtualService.yaml.j2
+        dest: "helm/{{ app.name }}/templates/virtualService.yaml"
+      when:   config.virtualService  == 'enabled'
+#------------------------------------------------------------------------------------------
+
+    - name: Creating values from templates
+      template:
+        src: values.yaml.j2
+        dest: "helm/{{ app.name }}/values.yaml"
+     
+
+########################################################################################### 
+
+    - name: Creating doc-reg-secret resource from templates
+      template:
+        src: doc-reg-secret.yaml.j2
+        dest: "helm/{{ app.name }}/templates/doc-reg-secret.yaml"
+      when:   config.gateway  == 'enabled'
+#------------------------------------------------------------------------------------------
+
+    - name: Create link to doc-reg-secret file
+      file:
+        dest: helm/{{ app.name}}/{{ doc_reg_secret.file }}
+        src: ~/.config/{{ doc_reg_secret.file }}
+        state: link
+        force: yes
+#------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------
+  
+    - name: Creating db secret resource from template
+      template:
+        src: db-secret.yaml.j2
+        dest: helm/{{ app.name }}/templates/db-secret.yaml
+      when:   config.gateway  == 'enabled'
+#------------------------------------------------------------------------------------------
+
+    - name: Create link to db secret file
+      file:
+        dest: "helm/{{ app.name}}/{{ db_secret.file }}"
+        src: "~/.config/{{ db_secret.file }}"
+        state: link
+        force: yes
+
+    
+###########################################################################################        
+
+    - name: Creating staging certificate resource from template
+      
+      template:
+        src: certificate.yaml.j2
+        dest: helm/certificate-staging.yaml
+      vars:  
+       certificate: 
+          issuer: letsencrypt
+          type: staging
+          name: "{{ app.name }}"
+          app: "{{ app.name }}"
+          #class: istio
+          hostBaseDomain: "{{ app.host }}"
+          namespace: istio-system
+
+    - name: Creating production certificate resource from template
+      template:
+        src: certificate.yaml.j2
+        dest: helm/certificate-prod.yaml
+      vars:  
+         certificate: 
+          issuer: letsencrypt
+          type: prod
+          name: "{{ app.name }}"
+          app: "{{ app.name }}"
+          #class: istio
+          hostBaseDomain: "{{ app.host }}"
+          namespace: istio-system
+    
+
+   
+
+   

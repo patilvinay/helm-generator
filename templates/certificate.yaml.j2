@@ -1,0 +1,19 @@
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+   name:  {{ certificate.name }}
+   namespace:  {{ certificate.namespace }}
+spec:
+  secretName:  {{ certificate.name }}-{{ certificate.type }}
+  issuerRef:
+{% if  certificate.type ==  "prod" %}
+     name: {{ certificate.issuer }}
+{% elif certificate.type == "staging" %}
+     name: {{certificate.issuer}}-{{ certificate.type }}
+{% endif %}
+     kind: ClusterIssuer
+  commonName: {{ certificate.app }}.{{ certificate.hostBaseDomain }}
+  dnsNames:
+    - {{ certificate.app }}.{{ certificate.hostBaseDomain }}
+    

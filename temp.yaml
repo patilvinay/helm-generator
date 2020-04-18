@@ -1,0 +1,202 @@
+---
+# Source: cloudbilling-api/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cloudbilling-api
+  labels:
+    helm.sh/chart: cloudbilling-api-0.1.0
+    app.kubernetes.io/name: cloudbilling-api
+    app.kubernetes.io/instance: cloudbilling-api
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: cloudbilling-api/templates/db-secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cloudbilling-api-dbstring
+  labels:
+    helm.sh/chart: cloudbilling-api-0.1.0
+    app.kubernetes.io/name: cloudbilling-api
+    app.kubernetes.io/instance: cloudbilling-api
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+    version: 0.0.3
+  resourceVersion: "0.0.3"
+type: Opaque
+data:
+  dbstring: bW9uZ29kYjovL2Nsb3VkYmlsbGluZzp3ZWxjb21lQHdhcm0tZGV2ZWxvcG1lbnQtbW9uZ29kYi5rdWJlYXBwLnN2Yy5jbHVzdGVyLmxvY2FsOjI3MDE3L0Nsb3VkQmlsbGluZ0RC
+---
+# Source: cloudbilling-api/templates/doc-reg-secret.yaml
+apiVersion: v1
+kind: Secret
+data:
+  .dockerconfigjson: ewogICAgImF1dGhzIjoKICAgIHsKICAgICAgICAicmVnaXN0cnkuZ2l0bGFiLmNvbSI6CiAgICAgICAgewogICAgICAgICAgICAidXNlcm5hbWUiOiJ2aW5heS5ocGF0aWxAZ21haWwuY29tIiwKICAgICAgICAgICAgInBhc3N3b3JkIjoib2FyOWRNTUZma2g2Rkg2N3BYbjQiCiAgICAgICAgfQogICAgfQoKfQo=
+metadata:
+  name: cloudbilling-api
+  labels:
+    helm.sh/chart: cloudbilling-api-0.1.0
+    app.kubernetes.io/name: cloudbilling-api
+    app.kubernetes.io/instance: cloudbilling-api
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+    version: 0.0.3
+  resourceVersion: "0.0.3"
+type: 
+  kubernetes.io/dockerconfigjson
+---
+# Source: cloudbilling-api/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: cloudbilling-api
+  labels:
+    helm.sh/chart: cloudbilling-api-0.1.0
+    app.kubernetes.io/name: cloudbilling-api
+    app.kubernetes.io/instance: cloudbilling-api
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: cloudbilling-api
+    app.kubernetes.io/instance: cloudbilling-api
+---
+# Source: cloudbilling-api/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudbilling-api
+  labels:
+    helm.sh/chart: cloudbilling-api-0.1.0
+    app.kubernetes.io/name: cloudbilling-api
+    app.kubernetes.io/instance: cloudbilling-api
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: cloudbilling-api
+      app.kubernetes.io/instance: cloudbilling-api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: cloudbilling-api
+        app.kubernetes.io/instance: cloudbilling-api
+    spec:
+      imagePullSecrets:
+        - name: cloudbilling-api
+      serviceAccountName: cloudbilling-api
+      securityContext:
+        {}
+      containers:
+        - name: cloudbilling-api
+          securityContext:
+            {}
+          image: "registry.gitlab.com/vinay.hpatil/nbpcloudservices:0.0.2"
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: DBSTRING
+              valueFrom:
+                secretKeyRef:
+                  key: dbstring
+                  name: cloudbilling-api-dbstring
+          ports:
+            - containerPort: 4000
+              name: http
+              protocol: TCP
+            - containerPort: 4001
+              name: http-1
+              protocol: TCP
+         # livenessProbe:
+         #   httpGet:
+         #     path: /
+         #     port: http
+         # readinessProbe:
+         #   httpGet:
+         #     path: /
+         #     port: http
+          resources:
+            {}
+---
+# Source: cloudbilling-api/templates/gateway.yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name:  cloudbilling-api
+  labels:
+    helm.sh/chart: cloudbilling-api-0.1.0
+    app.kubernetes.io/name: cloudbilling-api
+    app.kubernetes.io/instance: cloudbilling-api
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  servers:
+  - port:
+      number:  80
+      name:  http
+      protocol:  HTTP
+    hosts:
+    -  ngxconnect.in
+---
+# Source: cloudbilling-api/templates/virtualService.yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: cloudbilling-api
+  labels:
+    helm.sh/chart: cloudbilling-api-0.1.0
+    app.kubernetes.io/name: cloudbilling-api
+    app.kubernetes.io/instance: cloudbilling-api
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  hosts:
+  - 
+  gateways:
+  - cloudbilling-api
+  http:
+    - match:
+      - uri:
+          prefix: /api/v1/business
+      route:
+      - destination:
+          host: abc.com
+          port:
+            number: 3001
+    - match:
+      - uri:
+          prefix: /api/v1/outlet
+      route:
+      - destination:
+          host: abc.com
+          port:
+            number: 3011
+---
+# Source: cloudbilling-api/templates/tests/test-connection.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "cloudbilling-api-test-connection"
+  labels:
+    helm.sh/chart: cloudbilling-api-0.1.0
+    app.kubernetes.io/name: cloudbilling-api
+    app.kubernetes.io/instance: cloudbilling-api
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    "helm.sh/hook": test-success
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['cloudbilling-api:80']
+  restartPolicy: Never

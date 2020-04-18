@@ -1,0 +1,97 @@
+app:
+    name: cloudbilling-api
+    version: latest
+    host: ngxconnect.in
+    kubeContext: do-blr1-k8s-090420
+    namespace: cloudbilling
+
+config:
+   deployment: 'enabled' 
+   service: 'enabled'
+   ingress: 'enabled'
+   gateway: 'enabled'
+   virtualService: 'enabled'
+   dockerSecret: 'enabled'
+   applicationSecret: 'enabled'
+   dockersecret: 'enabled'
+
+
+
+ingress:
+    class: istio
+    hostBaseDomain: "{{ app.host }}"
+    svcName: "{{ app.name }}"
+    svcPort: 5000  
+    svcPath: /
+  
+   
+ 
+
+
+deployment:
+    class: istio
+    hostBaseDomain: "{{ app.host }}"
+    svcName: "{{ app.name }}"
+    svcPort: 5000  
+    svcPath: /
+    containerPorts: 
+      - containerPort: 4000
+        protocol: TCP
+        name: http
+      - containerPort: 4001
+        protocol: TCP
+        name: http-1 
+    env:
+      - name: DBSTRING
+        valueFrom:
+          secretKeyRef:
+             name: "{{ app.name }}-dbstring"
+             key: dbstring     
+
+
+    container:
+        name: nbpcloudservices
+        registry: registry.gitlab.com/vinay.hpatil/
+        tag: 0.0.2
+        pullPolicy: IfNotPresent
+        livenessprobe: no 
+
+
+virtualService:
+   destination:
+      - path: /api/v1/business
+        port: 3001
+        host: abc.com
+      - path: /api/v1/outlet
+        port: 3011
+        host: abc.com
+     
+
+gateway:
+    domain: ngxconnect.in
+    port: 80
+    portname: http
+    protocol: HTTP
+
+
+
+
+db_secret:
+     file:  ".{{ app.name }}.dbstring"
+doc_reg_secret:
+     file:   ".{{ app.name }}.doc-reg-secret"
+    
+
+
+
+certificate: 
+    issuer: letsencrypt
+    type: staging #! emum { staging , prod}
+    #name: cert-todo
+    name: "{{ app.name }}"
+    app: "{{ app.name }}"
+    class: istio
+    hostBaseDomain: "{{ app.host }}"
+    namespace: istio-system
+  
+  
