@@ -24,6 +24,16 @@ ansible-playbook helm-generator
 2. Helm 
 3. kubectl (after genertion)
 
+# Prerequisites to use the generated helm chart
+1. kubectl
+2. k8s cluster (Cloud,minikube,kind, I use kind)
+3. Istio Installed in K8s
+
+> When you run the helm install use the right context.
+```
+kubectl config use-config  <your context>
+```
+
 
 # Example configuration (partial)
 ```
