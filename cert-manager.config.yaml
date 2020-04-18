@@ -1,0 +1,29 @@
+app:
+    name: cert-Issuer
+    host: ngxconnect.in
+    
+
+
+config:
+   deployment: 'disabled' 
+   service: 'disabled'
+   ingress: 'disabled'
+   gateway: 'disabled'
+   pullsecret: 'disabled'
+   appSecret: 'disabled'
+   dbSecret: 'disabled'
+   virtualService: 'disabled'
+   dockerSecret: 'disabled'
+   applicationSecret: 'disabled'
+   dockersecret: 'disabled'
+   certIssuer: 'enabled'
+   certificates: 'disable'
+
+
+
+cert_manager:
+    issuer: certmanager-dns
+    email: vinay.hpatil@gmail.com
+    server:  https://acme-staging-v02.api.letsencrypt.org/directory
+    tokenFile: "~/.config/cert-manager-dns-token"
+    tokenFileSymLink: ".{{ app.name }}.cert-dns-token"

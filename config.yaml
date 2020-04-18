@@ -10,10 +10,15 @@ config:
    service: 'enabled'
    ingress: 'enabled'
    gateway: 'enabled'
+   pullsecret: 'enabled'
+   appSecret: 'enabled'
+   dbSecret: 'enabled'
    virtualService: 'enabled'
    dockerSecret: 'enabled'
    applicationSecret: 'enabled'
    dockersecret: 'enabled'
+   certIssuer: 'enabled'
+   certificates: 'enabled'
 
 
 
@@ -77,12 +82,22 @@ gateway:
 
 
 db_secret:
-     file:  ".{{ app.name }}.dbstring"
+     tokenFileSymLink:  ".{{ app.name }}.dbstring"
+     tokenFile: "~/.config/{{ app.name }}/.dbstring"
+
 doc_reg_secret:
-     file:   ".{{ app.name }}.doc-reg-secret"
+     tokenFileSymLink:   ".{{ app.name }}.doc-reg-secret"
+     tokenFile: "~/.config/{{ app.name }}/.doc-reg-secret"
     
 
 
+
+cert_manager:
+    issuer: certmanager-dns
+    email: vinay.hpatil@gmail.com
+    server:  https://acme-staging-v02.api.letsencrypt.org/directory
+    tokenFile: "~/.config/{{ app.name }}/.cert-manager-dns-token"
+    tokenFileSymLink: ".{{ app.name }}.cert-dns-token"
 
 certificate: 
     issuer: letsencrypt

@@ -17,6 +17,17 @@
 
     - name: Create Helm Chart
       shell: helm create helm/{{ app.name }}
+
+
+    - name: Remove unwanted auto generated helm file
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - "helm/{{ app.name }}/templates/deployment.yaml"
+        - "helm/{{ app.name }}/templates/service.yaml"
+        - "helm/{{ app.name }}/templates/ingress.yaml"
+        - "helm/{{ app.name }}/templates/serviceaccout.yaml"
 ##########################################################################################
 ######################### Create the helm template using jinja2 template #################
 ##########################################################################################
@@ -67,15 +78,16 @@
       template:
         src: doc-reg-secret.yaml.j2
         dest: "helm/{{ app.name }}/templates/doc-reg-secret.yaml"
-      when:   config.gateway  == 'enabled'
+      when:   config.pullsecret  == 'enabled'
 #------------------------------------------------------------------------------------------
 
     - name: Create link to doc-reg-secret file
       file:
-        dest: helm/{{ app.name}}/{{ doc_reg_secret.file }}
-        src: ~/.config/{{ doc_reg_secret.file }}
+        dest: helm/{{ app.name}}/{{ doc_reg_secret.tokenFileSymLink }}
+        src: "{{ doc_reg_secret.tokenFile }}"
         state: link
         force: yes
+      when:   config.pullsecret  == 'enabled'
 #------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------
   
@@ -83,18 +95,49 @@
       template:
         src: db-secret.yaml.j2
         dest: helm/{{ app.name }}/templates/db-secret.yaml
-      when:   config.gateway  == 'enabled'
+      when:   config.dbSecret  == 'enabled'
 #------------------------------------------------------------------------------------------
 
     - name: Create link to db secret file
       file:
-        dest: "helm/{{ app.name}}/{{ db_secret.file }}"
-        src: "~/.config/{{ db_secret.file }}"
+        dest: "helm/{{ app.name}}/{{ db_secret.tokenFileSymLink }}"
+        src: "{{ db_secret.tokenFile }}"
         state: link
         force: yes
+      when:   config.dbSecret  == 'enabled'
 
     
 ###########################################################################################        
+################################### Create cert-manager issuer ############################
+
+    - name: Creating Certmanager Issuer resource
+      template:
+          src: certmanager-issuer.yaml.j2
+          dest: "helm/{{ app.name }}/templates/certmanager-issuer.yaml"
+      when:  config.certIssuer  == 'enabled'
+      register: result
+      ignore_errors: yes
+    
+    
+    
+    - name: Create link to provider secret file
+      file:
+        dest: "helm/{{ app.name}}/{{ cert_manager.tokenFileSymLink }}"
+        src: "{{ cert_manager.tokenFile }}"
+        state: link
+        force: yes
+      when:  config.certIssuer  == 'enabled'
+
+
+
+
+
+
+
+    
+###########################################################################################        
+################################### Create cert-manager certificate########################
+
 
     - name: Creating staging certificate resource from template
       
@@ -110,6 +153,7 @@
           #class: istio
           hostBaseDomain: "{{ app.host }}"
           namespace: istio-system
+      when:  config.certificates  == 'enabled'
 
     - name: Creating production certificate resource from template
       template:
@@ -124,8 +168,8 @@
           #class: istio
           hostBaseDomain: "{{ app.host }}"
           namespace: istio-system
+      when:  config.certificates  == 'enabled'
     
 
    
 
-   

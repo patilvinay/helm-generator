@@ -1,0 +1,19 @@
+apiVersion: cert-manager.io/v1alpha2
+kind: ClusterIssuer
+metadata:
+  name: {{ cert_manager.issuer }}
+spec:
+  acme:
+    # You must replace this email address with your own.
+    # Let's Encrypt will use this to contact you about expiring
+    # certificates, and issues related to your account.
+    email: {{ cert_manager.email }}
+    server: {{ cert_manager.server }}
+    privateKeySecretRef:
+       name: example-issuer-account-key
+    solvers:
+    - dns01:
+        digitalocean:
+          tokenSecretRef:
+            name: digitalocean-dns
+            key: {{'{{'}} .Files.Get "{{ cert_manager.tokenFileSymLink }}" | b64enc {{'}}'}}
