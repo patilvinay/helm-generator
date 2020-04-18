@@ -3,6 +3,7 @@
   gather_facts: no
   vars_files:
       - ./templates/var.yaml
+     # - cert-manager.config.yaml
       - config.yaml
   tasks:
     - name: Delete existing helm charts if any
@@ -83,7 +84,7 @@
 
     - name: Create link to doc-reg-secret file
       file:
-        dest: helm/{{ app.name}}/{{ doc_reg_secret.tokenFileSymLink }}
+        dest: helm/{{ doc_reg_secret.tokenFileSymLink }}
         src: "{{ doc_reg_secret.tokenFile }}"
         state: link
         force: yes
@@ -100,7 +101,7 @@
 
     - name: Create link to db secret file
       file:
-        dest: "helm/{{ app.name}}/{{ db_secret.tokenFileSymLink }}"
+        dest: "helm/{{ db_secret.tokenFileSymLink }}"
         src: "{{ db_secret.tokenFile }}"
         state: link
         force: yes
@@ -118,11 +119,17 @@
       register: result
       ignore_errors: yes
     
-    
+    - name: Create link to provider secret file
+      file:
+        dest: "helm/{{ cert_manager.tokenFileSymLink }}"
+        src: "{{ cert_manager.tokenFile }}"
+        state: link
+        force: yes
+      when:  config.certIssuer  == 'enabled'
     
     - name: Create link to provider secret file
       file:
-        dest: "helm/{{ app.name}}/{{ cert_manager.tokenFileSymLink }}"
+        dest: "helm/{{ cert_manager.tokenFileSymLink }}"
         src: "{{ cert_manager.tokenFile }}"
         state: link
         force: yes
