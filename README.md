@@ -15,8 +15,13 @@ Features
 9. Certmanager Certificate resource(both prod and staging)
 config.yaml has all the configuration date. This file can be modified to customise the generated template
 
+
+## How to run 
 ```
-ansible-playbook helm-generator
+./helm-generator <your config file>
+
+#Example
+./helm-generator config-webapp.yaml
 ```
 
 ## Prerequisites.
