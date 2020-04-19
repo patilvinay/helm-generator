@@ -3,8 +3,8 @@
   gather_facts: no
   vars_files:
       - ./templates/var.yaml
-     # - cert-manager.config.yaml
-      - config.yaml
+      #- cert-manager.config.yaml
+      - config-webapp.yaml
   tasks:
     - name: Delete existing helm charts if any
       file:
@@ -13,11 +13,11 @@
 
     - name: Creating helm directory
       file:
-        path: "helm/{{ app.name }}"
+        path: "{{ app.genpath }}/helm/{{ app.name }}"
         state: directory
 
     - name: Create Helm Chart
-      shell: helm create helm/{{ app.name }}
+      shell: helm create {{ app.genpath }}/helm/{{ app.name }}
 
 
     - name: Remove unwanted auto generated helm file
@@ -25,52 +25,53 @@
         path: "{{ item }}"
         state: absent
       with_items:
-        - "helm/{{ app.name }}/templates/deployment.yaml"
-        - "helm/{{ app.name }}/templates/service.yaml"
-        - "helm/{{ app.name }}/templates/ingress.yaml"
-        - "helm/{{ app.name }}/templates/serviceaccout.yaml"
+        - "{{ app.genpath }}/helm/{{ app.name }}/templates/deployment.yaml"
+        - "{{ app.genpath }}/helm/{{ app.name }}/templates/service.yaml"
+        - "{{ app.genpath }}/helm/{{ app.name }}/templates/ingress.yaml"
+        #- "{{ app.genpath }}/helm/{{ app.name }}/templates/serviceaccount.yaml"
+        #- "{{ app.genpath }}/helm/{{ app.name }}/templates/tests/test-connection.yaml"
 ##########################################################################################
 ######################### Create the helm template using jinja2 template #################
 ##########################################################################################
     - name: Creating Deployment from templates
       template:
         src: deployment.yaml.j2
-        dest: "helm/{{ app.name }}/templates/deployment.yaml"
+        dest: "{{ app.genpath }}/helm/{{ app.name }}/templates/deployment.yaml"
       when:   config.deployment  == 'enabled'
 #------------------------------------------------------------------------------------------      
 
     - name: Creating Service from templates
       template:
         src: service.yaml.j2
-        dest: "helm/{{ app.name }}/templates/service.yaml"
+        dest: "{{ app.genpath }}/helm/{{ app.name }}/templates/service.yaml"
       when:   config.service  == 'enabled'
 #------------------------------------------------------------------------------------------
 
     - name: Creating ingress from templates
       template:
         src: ingress.yaml.j2
-        dest: "helm/{{ app.name }}/templates/ingress.yaml"   
+        dest: "{{ app.genpath }}/helm/{{ app.name }}/templates/ingress.yaml"   
       when:   config.ingress  == 'enabled'  
 #------------------------------------------------------------------------------------------
 
     - name: Creating Istio GW from templates
       template:
         src: gateway.yaml.j2
-        dest: "helm/{{ app.name }}/templates/gateway.yaml"
+        dest: "{{ app.genpath }}/helm/{{ app.name }}/templates/gateway.yaml"
       when:   config.gateway  == 'enabled'
 #------------------------------------------------------------------------------------------
 
     - name: Creating VS from templates
       template:
         src: virtualService.yaml.j2
-        dest: "helm/{{ app.name }}/templates/virtualService.yaml"
+        dest: "{{ app.genpath }}/helm/{{ app.name }}/templates/virtualService.yaml"
       when:   config.virtualService  == 'enabled'
 #------------------------------------------------------------------------------------------
 
     - name: Creating values from templates
       template:
         src: values.yaml.j2
-        dest: "helm/{{ app.name }}/values.yaml"
+        dest: "{{ app.genpath }}/helm/{{ app.name }}/values.yaml"
      
 
 ########################################################################################### 
@@ -78,13 +79,13 @@
     - name: Creating doc-reg-secret resource from templates
       template:
         src: doc-reg-secret.yaml.j2
-        dest: "helm/{{ app.name }}/templates/doc-reg-secret.yaml"
+        dest: "{{ app.genpath }}/helm/{{ app.name }}/templates/doc-reg-secret.yaml"
       when:   config.pullsecret  == 'enabled'
 #------------------------------------------------------------------------------------------
 
     - name: Create link to doc-reg-secret file
       file:
-        dest: helm/{{ doc_reg_secret.tokenFileSymLink }}
+        dest: "{{ app.genpath }}/helm/{{ app.name }}/{{ doc_reg_secret.tokenFileSymLink }}"
         src: "{{ doc_reg_secret.tokenFile }}"
         state: link
         force: yes
@@ -95,13 +96,13 @@
     - name: Creating db secret resource from template
       template:
         src: db-secret.yaml.j2
-        dest: helm/{{ app.name }}/templates/db-secret.yaml
+        dest: "{{ app.genpath }}/helm/{{ app.name }}/templates/db-secret.yaml"
       when:   config.dbSecret  == 'enabled'
 #------------------------------------------------------------------------------------------
 
     - name: Create link to db secret file
       file:
-        dest: "helm/{{ db_secret.tokenFileSymLink }}"
+        dest: "{{ app.genpath }}/helm/{{ app.name }}/{{ db_secret.tokenFileSymLink }}"
         src: "{{ db_secret.tokenFile }}"
         state: link
         force: yes
@@ -114,26 +115,19 @@
     - name: Creating Certmanager Issuer resource
       template:
           src: certmanager-issuer.yaml.j2
-          dest: "helm/{{ app.name }}/templates/certmanager-issuer.yaml"
+          dest: "{{ app.genpath }}/helm/{{ app.name }}/templates/certmanager-issuer.yaml"
       when:  config.certIssuer  == 'enabled'
       register: result
       ignore_errors: yes
     
     - name: Create link to provider secret file
       file:
-        dest: "helm/{{ cert_manager.tokenFileSymLink }}"
+        dest: "{{ app.genpath }}/helm/{{ app.name }}/{{ cert_manager.tokenFileSymLink }}"
         src: "{{ cert_manager.tokenFile }}"
         state: link
         force: yes
       when:  config.certIssuer  == 'enabled'
     
-    - name: Create link to provider secret file
-      file:
-        dest: "helm/{{ cert_manager.tokenFileSymLink }}"
-        src: "{{ cert_manager.tokenFile }}"
-        state: link
-        force: yes
-      when:  config.certIssuer  == 'enabled'
 
 
 
@@ -150,7 +144,7 @@
       
       template:
         src: certificate.yaml.j2
-        dest: helm/certificate-staging.yaml
+        dest: "{{ app.genpath }}/helm/certificate-staging.yaml"
       vars:  
        certificate: 
           issuer: letsencrypt
@@ -165,7 +159,7 @@
     - name: Creating production certificate resource from template
       template:
         src: certificate.yaml.j2
-        dest: helm/certificate-prod.yaml
+        dest: "{{ app.genpath }}/helm/certificate-prod.yaml"
       vars:  
          certificate: 
           issuer: letsencrypt

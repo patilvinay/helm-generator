@@ -1,6 +1,6 @@
 
 
-{% if config.deployment is sameas 'enabled' %}
+{% if config.deployment == 'enabled' %}
 image:
   repository: {{ deployment.container.registry }}{{ deployment.container.name }}
   pullPolicy: IfNotPresent
@@ -11,21 +11,29 @@ replicaCount: 1
 {% endif %}
 
 
-{% if config.pullsecret is sameas 'enabled' %}
+{% if config.pullsecret == 'enabled' %}
 secretfile:
   version: 0.0.3
 {% endif %}
    
 
 
-{% if config.deployment is sameas 'enabled' %}
+{% if config.service == 'enabled' %}
 service:
-  type: ClusterIP
-  port: 80
+  type: {{ service.type }}
+  port: {{ service.port }}
+  containerPort: {{ service.containerPort }}
+  enabled: true
+{% else %}
+  service:
+  enabled: true
+  type: 
 {% endif %}
-{% if config.deployment is sameas 'enabled' %}
+
+
+{% if config.ingress == 'enabled' %}
 ingress:
-  enabled: false
+  enabled: true
   annotations: {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
@@ -35,9 +43,16 @@ ingress:
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
+
+
+{% else %}
+ingress:
+  enabled: false
 {% endif %}
 
-{% if config.deployment is sameas 'enabled' %}
+
+
+{% if config.deployment == 'enabled' %}
 deployment:
   ports:
 {% for item in deployment.containerPorts %}
@@ -55,7 +70,7 @@ deployment:
 {% endfor %}
 {% endif %}
 
-{% if config.gateway is sameas 'enabled' %}
+{% if config.gateway == 'enabled' %}
 gateway:
   port: {{ gateway.port }}
   portname: {{ gateway.portname }}
@@ -63,7 +78,7 @@ gateway:
   domain: {{ gateway.domain }}
 {% endif %}
 
-{% if config.virtualService is sameas 'enabled' %}
+{% if config.virtualService == 'enabled' %}
 virtualService:
   destination:
 {% for item in virtualService.destination %}
@@ -78,7 +93,14 @@ virtualService:
 {% endfor %}
 {% endif %}
 
+{% if config.serviceAccount == 'enabled' %}
+serviceAccount:
+  create: true
+  annotations: {}
+  name:
+{% endif %}
 
+istioinjection: enabled
 
   
 

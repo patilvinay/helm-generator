@@ -26,4 +26,4 @@ cert_manager:
     email: vinay.hpatil@gmail.com
     server:  https://acme-staging-v02.api.letsencrypt.org/directory
     tokenFile: "~/.config/cert-manager-dns-token"
-    tokenFileSymLink: "{{ app.name }}/.cert-dns-token"
+    tokenFileSymLink: ".cert-dns-token"

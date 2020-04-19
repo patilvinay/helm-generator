@@ -1,10 +1,10 @@
 app:
-    name: cloudbilling-api
+    name: cloudbilling-webapp
     version: latest
-    host: cloudbilling-api.ngxconnect.in
+    host: cloudbilling.ngxconnect.in
     kubeContext: do-blr1-k8s-090420
     namespace: cloudbilling
-    genpath: ~/d2/nbpcloudservices/
+    genpath: ~/d2/NGXCRM/
 
 
 config:
@@ -35,19 +35,16 @@ ingress:
    
 service:
   type: ClusterIP
-  port: 4000
-  containerPort: 4000
+  port: 80
+  containerPort: 80
   enabled: true
 
 
 deployment:
     class: istio
     hostBaseDomain: "{{ app.host }}"
-    svcName: "{{ app.name }}"
-    svcPort: 5000  
-    svcPath: /
     containerPorts: 
-      - containerPort: 4000
+      - containerPort: 80
         protocol: TCP
         name: http
     env:
@@ -59,7 +56,7 @@ deployment:
 
 
     container:
-        name: cloudbilling-api
+        name: cloudbilling-webapp
         registry: registry.gitlab.com/vinay.hpatil/
         tag: 0.0.1
         pullPolicy: IfNotPresent
@@ -69,7 +66,7 @@ deployment:
 virtualService:
    destination:
       - path: /
-        port: 4000
+        port: 80
         host: "{{ app.name }}"
       
      
