@@ -21,7 +21,7 @@ config.yaml has all the configuration date. This file can be modified to customi
 ./helm-generator <your config file>
 
 #Example
-./helm-generator config-webapp.yaml
+./helm-generator ./config/config-webapp.yaml
 ```
 
 ## Prerequisites.
