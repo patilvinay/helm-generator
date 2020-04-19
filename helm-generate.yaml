@@ -4,7 +4,7 @@
   vars_files:
       - ./templates/var.yaml
       #- cert-manager.config.yaml
-      - config-webapp.yaml
+      - .config
   tasks:
     - name: Delete existing helm charts if any
       file:

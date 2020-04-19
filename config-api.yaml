@@ -1,10 +1,11 @@
 app:
-    name: cloudbilling-api
+    name: leadapp-api
     version: latest
-    host: cloudbilling-api.ngxconnect.in
+    host: leadapp-api.ngxconnect.in
     kubeContext: do-blr1-k8s-090420
-    namespace: cloudbilling
-    genpath: ~/d2/nbpcloudservices/
+    namespace: leadapp
+    #genpath: ~/d2/ServiceApi/
+    genpath: ./
 
 
 config:
@@ -35,8 +36,8 @@ ingress:
    
 service:
   type: ClusterIP
-  port: 4000
-  containerPort: 4000
+  port: 3000
+  containerPort: 3000
   enabled: true
 
 
@@ -47,7 +48,7 @@ deployment:
     svcPort: 5000  
     svcPath: /
     containerPorts: 
-      - containerPort: 4000
+      - containerPort: 3000
         protocol: TCP
         name: http
     env:
@@ -59,7 +60,7 @@ deployment:
 
 
     container:
-        name: cloudbilling-api
+        name: leadapp-api
         registry: registry.gitlab.com/vinay.hpatil/
         tag: 0.0.1
         pullPolicy: IfNotPresent
@@ -69,7 +70,7 @@ deployment:
 virtualService:
    destination:
       - path: /
-        port: 4000
+        port: 3000
         host: "{{ app.name }}"
       
      

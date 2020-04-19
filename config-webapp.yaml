@@ -4,7 +4,7 @@ app:
     host: cloudbilling.ngxconnect.in
     kubeContext: do-blr1-k8s-090420
     namespace: cloudbilling
-    genpath: ~/d2/NGXCRM/
+    genpath: ./
 
 
 config:
