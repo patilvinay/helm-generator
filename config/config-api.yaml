@@ -1,12 +1,13 @@
 app:
-    name: leadapp-api
+    name: cloudbilling-api
     version: latest
-    host: leadapp-api.ngxconnect.in
+    host: cloudbilling-api.ngxconnect.in
     kubeContext: do-blr1-k8s-090420
-    namespace: leadapp
-    #genpath: ~/d2/ServiceApi/
-    genpath: ./
-
+    namespace: cloudbilling
+    version: 0.1.0
+    maintainer: vinay.hpatil@gmail.com
+    registry: registry.gitlab.com/vinay.hpatil/
+    genpath: /home/vagrant/d2/cloudbilling-api/cloudbilling-api-deploy/
 
 config:
    deployment: 'enabled' 
@@ -60,9 +61,8 @@ deployment:
 
 
     container:
-        name: leadapp-api
-        registry: registry.gitlab.com/vinay.hpatil/
-        tag: 0.0.1
+        name: "{{app.name}}"
+        registry: "{{app.registry}}"
         pullPolicy: IfNotPresent
         livenessprobe: no 
 
@@ -97,7 +97,7 @@ doc_reg_secret:
 
 cert_manager:
     issuer: certmanager-dns
-    email: vinay.hpatil@gmail.com
+    email: "{{ app.maintainer }}"
     server:  https://acme-staging-v02.api.letsencrypt.org/directory
     tokenFile: "~/.config/.cert-manager-dns-token"
     tokenFileSymLink: ".cert-dns-token"

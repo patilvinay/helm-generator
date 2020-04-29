@@ -4,7 +4,6 @@
 image:
   repository: {{ deployment.container.registry }}{{ deployment.container.name }}
   pullPolicy: IfNotPresent
-  version: {{ deployment.container.tag }}
   PullSecret: 
     - name: {{ app.name }} 
 replicaCount: 1

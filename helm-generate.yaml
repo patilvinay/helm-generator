@@ -72,7 +72,12 @@
       template:
         src: values.yaml.j2
         dest: "{{ app.genpath }}/helm/{{ app.name }}/values.yaml"
-     
+#------------------------------------------------------------------------------------------
+
+    - name: Creating Chart from templates
+      template:
+        src: chart.yaml.j2
+        dest: "{{ app.genpath }}/helm/{{ app.name }}/Chart.yaml"     
 
 ########################################################################################### 
 
